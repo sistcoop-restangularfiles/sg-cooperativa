@@ -64,6 +64,22 @@
             },
             $remove: function(id){
                 return CooperativaRestangular.one(url, id).remove();
+            },
+
+            $abrir: function(){
+                return CooperativaRestangular.all(url+'/'+this.id+'/abrir').post();
+            },
+            $cerrar: function(){
+                return CooperativaRestangular.all(url+'/'+this.id+'/cerrar').post();
+            },
+            $congelar: function(){
+                return CooperativaRestangular.all(url+'/'+this.id+'/congelar').post();
+            },
+            $descongelar: function(){
+                return CooperativaRestangular.all(url+'/'+this.id+'/descongelar').post();
+            },
+            $getDetalle: function(){
+                return CooperativaRestangular.all(url+'/'+this.id+'/detalle').getList();
             }
         };
 
