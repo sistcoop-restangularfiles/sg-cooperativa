@@ -66,8 +66,8 @@
                 return CooperativaRestangular.one(url, id).remove();
             },
 
-            $abrir: function(){
-                return CooperativaRestangular.all(url+'/'+this.id+'/abrir').post();
+            $abrir: function(denominaciones){
+                return CooperativaRestangular.all(url+'/'+this.id+'/abrir').post(denominaciones);
             },
             $cerrar: function(){
                 return CooperativaRestangular.all(url+'/'+this.id+'/cerrar').post();
