@@ -145,7 +145,22 @@
             },
             $getDetalle: function(queryParams){
                 return CooperativaRestangular.all(url+'/'+this.id+'/detalle').getList(queryParams);
+            },
+
+
+            $addBovedaCaja: function(bovedaCaja){
+                return CooperativaRestangular.all(url+'/'+this.id+'/bovedaCajas').post(bovedaCaja);
+            },
+            $getBovedaCajas: function(){
+                return CooperativaRestangular.all(url+'/'+this.id+'/bovedaCajas').getList();
+            },
+            $addTrabajadorCaja: function(trabajadorCaja){
+                return CooperativaRestangular.all(url+'/'+this.id+'/trabajadorCajas').post(trabajadorCaja);
+            },
+            $getTrabajadorCajas: function(){
+                return CooperativaRestangular.all(url+'/'+this.id+'/trabajadorCajas').getList();
             }
+
         };
 
         CooperativaRestangular.extendModel(url, function(obj) {
@@ -160,5 +175,94 @@
 
     }]);
 
+    module.factory('SGBovedaCaja', ['CooperativaRestangular',  function(CooperativaRestangular) {
+
+        var url = 'bovedaCajas';
+
+        var modelMethos = {
+            $new: function(id){
+                return angular.extend({id: id}, modelMethos);
+            },
+            $build: function(){
+                return angular.extend({id: undefined}, modelMethos, {$save: function(){
+                    return CooperativaRestangular.all(url).post(this);
+                }});
+            },
+            $save: function() {
+                return CooperativaRestangular.one(url, this.id).customPUT(CooperativaRestangular.copy(this),'',{},{});
+            },
+
+            $find: function(id){
+                return CooperativaRestangular.one(url, id).get();
+            },
+            $search: function(queryParams){
+                return CooperativaRestangular.all(url).getList(queryParams);
+            },
+
+            $disable: function(){
+                return CooperativaRestangular.all(url+'/'+this.id+'/disable').post();
+            },
+            $remove: function(id){
+                return CooperativaRestangular.one(url, id).remove();
+            }
+
+        };
+
+        CooperativaRestangular.extendModel(url, function(obj) {
+            if(angular.isObject(obj)) {
+                return angular.extend(obj, modelMethos);
+            } else {
+                return angular.extend({id: obj}, modelMethos)
+            }
+        });
+
+        return modelMethos;
+
+    }]);
+
+    module.factory('SGTrabajadorCaja', ['CooperativaRestangular',  function(CooperativaRestangular) {
+
+        var url = 'trabajadorCajas';
+
+        var modelMethos = {
+            $new: function(id){
+                return angular.extend({id: id}, modelMethos);
+            },
+            $build: function(){
+                return angular.extend({id: undefined}, modelMethos, {$save: function(){
+                    return CooperativaRestangular.all(url).post(this);
+                }});
+            },
+            $save: function() {
+                return CooperativaRestangular.one(url, this.id).customPUT(CooperativaRestangular.copy(this),'',{},{});
+            },
+
+            $find: function(id){
+                return CooperativaRestangular.one(url, id).get();
+            },
+            $search: function(queryParams){
+                return CooperativaRestangular.all(url).getList(queryParams);
+            },
+
+            $disable: function(){
+                return CooperativaRestangular.all(url+'/'+this.id+'/disable').post();
+            },
+            $remove: function(id){
+                return CooperativaRestangular.one(url, id).remove();
+            }
+
+        };
+
+        CooperativaRestangular.extendModel(url, function(obj) {
+            if(angular.isObject(obj)) {
+                return angular.extend(obj, modelMethos);
+            } else {
+                return angular.extend({id: obj}, modelMethos)
+            }
+        });
+
+        return modelMethos;
+
+    }]);
 
 })();
