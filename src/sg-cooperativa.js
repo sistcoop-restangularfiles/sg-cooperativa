@@ -249,8 +249,11 @@
             },
             $remove: function(id){
                 return CooperativaRestangular.one(url, id).remove();
-            }
+            },
 
+            $findByTipoNumeroDocumento: function(tipodocumento, numeroDocumento){
+                return CooperativaRestangular.one(url+'/tipoDocumento/'+tipodocumento+'/numeroDocumento/'+numeroDocumento).get();
+            }
         };
 
         CooperativaRestangular.extendModel(url, function(obj) {
