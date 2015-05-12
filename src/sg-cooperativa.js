@@ -134,8 +134,8 @@
             $abrir: function(){
                 return CooperativaRestangular.all(url+'/'+this.id+'/abrir').post();
             },
-            $cerrar: function(){
-                return CooperativaRestangular.all(url+'/'+this.id+'/cerrar').post();
+            $cerrar: function(detalle){
+                return CooperativaRestangular.all(url+'/'+this.id+'/cerrar').post(detalle);
             },
             $congelar: function(){
                 return CooperativaRestangular.all(url+'/'+this.id+'/congelar').post();
