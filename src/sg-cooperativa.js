@@ -148,17 +148,21 @@
             },
 
 
-            $addBovedaCaja: function(bovedaCaja){
-                return CooperativaRestangular.all(url+'/'+this.id+'/bovedaCajas').post(bovedaCaja);
+            $addBovedaCaja: function(obj){
+                return CooperativaRestangular.one(url, this.id).all('bovedaCajas').post(obj);
             },
             $getBovedaCajas: function(){
-                return CooperativaRestangular.all(url+'/'+this.id+'/bovedaCajas').getList();
+                return CooperativaRestangular.one(url, this.id).all('bovedaCajas').getList();
             },
-            $addTrabajadorCaja: function(trabajadorCaja){
-                return CooperativaRestangular.all(url+'/'+this.id+'/trabajadorCajas').post(trabajadorCaja);
+            $removeBovedaCaja: function(idBovedaCaja){
+                return CooperativaRestangular.one(url, this.id).one('bovedaCajas', idBovedaCaja).remove();
+            },
+
+            $addTrabajadorCaja: function(obj){
+                return CooperativaRestangular.one(url, this.id).all('trabajadorCajas').post(obj);
             },
             $getTrabajadorCajas: function(){
-                return CooperativaRestangular.all(url+'/'+this.id+'/trabajadorCajas').getList();
+                return CooperativaRestangular.one(url, this.id).all('trabajadorCajas').getList();
             }
 
         };
