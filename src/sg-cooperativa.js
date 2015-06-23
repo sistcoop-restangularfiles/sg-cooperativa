@@ -30,8 +30,16 @@
         });
     }]);
 
-    var resources = function (url, restangular) {
+    var RestObject = function (url, restangular) {
         var modelMethods = {
+
+            $getUrl: function () {
+                return restangular.one(url, this.id).getRestangularUrl();
+            },
+            $getShortUrl: function (subresource) {
+                return restangular + '/' + this.id + '/' + subresource;
+            },
+
             $new: function (id) {
                 return angular.extend({id: id}, modelMethods);
             },
@@ -47,17 +55,11 @@
                 return restangular.all(url).getList(queryParams);
             },
 
-            $find: function () {
-                return restangular.one(url, this.id).get();
+            $find: function (id) {
+                return restangular.one(url, id).get();
             },
             $save: function () {
                 return restangular.one(url, this.id).customPUT(restangular.copy(this), '', {}, {});
-            },
-            $getUrl: function () {
-                return restangular.one(url, this.id).getRestangularUrl();
-            },
-            $getShortUrl: function () {
-                return url + '/' + this.id;
             },
 
             $enable: function () {
@@ -70,72 +72,27 @@
                 return restangular.one(url, this.id).remove();
             }
         };
-        return modelMethods;
-    };
 
-
-    function RestObject(url, restangular) {
-        this.getUrl = function () {
-            return url;
-        };
-        this.getRestangular = function () {
-            return restangular;
-        };
-    }
-
-    RestObject.prototype.$getUrl = function () {
-        return this.getRestangular().one(this.getUrl(), this.id).getRestangularUrl();
-    };
-
-    RestObject.prototype.$getShortUrl = function (url) {
-        return this.getUrl() + '/' + this.id + '/' + url;
-    };
-
-    RestObject.prototype.$new = function (id) {
-        return angular.extend({id: id}, this);
-    };
-
-    RestObject.prototype.$build = function () {
-        return angular.extend({id: undefined}, this, {
-            $save: function () {
-                return this.getRestangular().all(this.getUrl()).post(this);
+        restangular.extendModel(url, function (obj) {
+            if (angular.isObject(obj)) {
+                return angular.extend(obj, modelMethods);
+            } else {
+                return angular.extend({id: obj}, modelMethods)
             }
         });
-    };
 
-    RestObject.prototype.$find = function (id) {
-        return this.getRestangular().one(this.getUrl(), id).get();
-    };
-
-    RestObject.prototype.$search = function (queryParams) {
-        return this.getRestangular().all(this.getUrl()).getList(queryParams);
-    };
-
-    RestObject.prototype.$save = function () {
-        return this.getRestangular().one(this.getUrl(), this.id).customPUT(this.getRestangular().copy(this), '', {}, {});
-    };
-
-    RestObject.prototype.$enable = function () {
-        return this.getRestangular().one(this.getUrl(), this.id).all('enable').post();
-    };
-
-    RestObject.prototype.$disable = function () {
-        return this.getRestangular().one(this.getUrl(), this.id).all('disable').post();
-    };
-
-    RestObject.prototype.$remove = function () {
-        return this.getRestangular().one(this.getUrl(), this.id).remove();
+        return modelMethods;
     };
 
     module.factory('SGBoveda', ['CooperativaRestangular', function (CooperativaRestangular) {
 
-        var bovedaRest = new RestObject('bovedas', CooperativaRestangular);
+        var bovedaRest = RestObject('bovedas', CooperativaRestangular);
 
         /**
          * Historiales*
          * */
         var historialesUrl = bovedaRest.$getShortUrl('historiales');
-        var historialBovedaRest = new RestObject(historialesUrl, CooperativaRestangular);
+        var historialBovedaRest = RestObject(historialesUrl, CooperativaRestangular);
         historialBovedaRest.$cerrar = function () {
             return CooperativaRestangular.one(historialesUrl, historialBovedaRest.id).all('cerrar').post();
         };
@@ -148,13 +105,15 @@
         historialBovedaRest.$getDetalle = function () {
             return CooperativaRestangular.one(historialesUrl, historialBovedaRest.id).all('detalle').getList();
         };
-        bovedaRest.SGHistorialBoveda = historialBovedaRest;
+        bovedaRest.SGHistorialBoveda = function(){
+            return historialBovedaRest;
+        };
 
         /**
          * Transacciones boveda caja*
          * */
         var transaccionesBovedaCajaUrl = historialBovedaRest.$getShortUrl('transaccionesBovedaCaja');
-        var transaccionesBovedaCajaRest = new RestObject(transaccionesBovedaCajaUrl, CooperativaRestangular);
+        var transaccionesBovedaCajaRest = RestObject(transaccionesBovedaCajaUrl, CooperativaRestangular);
         transaccionesBovedaCajaRest.$confirmar = function () {
             return CooperativaRestangular.one(transaccionesBovedaCajaUrl, transaccionesBovedaCajaRest.id).all('confirmar').post();
         };
@@ -164,7 +123,9 @@
         transaccionesBovedaCajaRest.$getDetalle = function () {
             return CooperativaRestangular.one(transaccionesBovedaCajaUrl, transaccionesBovedaCajaRest.id).all('detalle').getList();
         };
-        historialBovedaRest.SGTransaccionBovedaCaja = transaccionesBovedaCajaRest;
+        historialBovedaRest.SGTransaccionBovedaCaja = function(){
+            return transaccionesBovedaCajaRest;
+        };
 
         return bovedaRest;
 
