@@ -4,7 +4,6 @@
 
     var module = angular.module('sg-cooperativa', ['restangular']);
 
-
     module.provider('sgCooperativa', function () {
 
         this.restUrl = 'http://localhost';
@@ -23,22 +22,31 @@
         };
     });
 
-
     module.factory('CooperativaRestangular', ['Restangular', 'sgCooperativa', function (Restangular, sgCooperativa) {
         return Restangular.withConfig(function (RestangularConfigurer) {
             RestangularConfigurer.setBaseUrl(sgCooperativa.getRestUrl());
         });
     }]);
 
-    var RestObject = function (url, restangular) {
+    var RestObject = function (path, restangular, extendMethods) {
         var modelMethods = {
 
-            $getUrl: function () {
-                return restangular.one(url, this.id).getRestangularUrl();
+            /**
+             * Retorna url*/
+            $getBasePath: function () {
+                return path;
             },
-            $getShortUrl: function (subresource) {
-                return restangular + '/' + this.id + '/' + subresource;
+            /**
+             * Retorna la url completa del objeto*/
+            $getAbsoluteUrl: function () {
+                return restangular.one(path, this.id).getRestangularUrl();
             },
+            /**
+             * Concatena la url de subresource con la url base y la retorna*/
+            $concatSubResourcePath: function (subResourcePath) {
+                return restangular + '/' + this.id + '/' + subResourcePath;
+            },
+
 
             $new: function (id) {
                 return angular.extend({id: id}, modelMethods);
@@ -46,34 +54,36 @@
             $build: function () {
                 return angular.extend({id: undefined}, modelMethods, {
                     $save: function () {
-                        return restangular.all(url).post(this);
+                        return restangular.all(path).post(this);
                     }
                 });
             },
 
             $search: function (queryParams) {
-                return restangular.all(url).getList(queryParams);
+                return restangular.all(path).getList(queryParams);
             },
 
             $find: function (id) {
-                return restangular.one(url, id).get();
+                return restangular.one(path, id).get();
             },
             $save: function () {
-                return restangular.one(url, this.id).customPUT(restangular.copy(this), '', {}, {});
+                return restangular.one(path, this.id).customPUT(restangular.copy(this), '', {}, {});
             },
 
             $enable: function () {
-                return restangular.one(url, this.id).all('enable').post();
+                return restangular.one(path, this.id).all('enable').post();
             },
             $disable: function () {
-                return restangular.one(url, this.id).all('disable').post();
+                return restangular.one(path, this.id).all('disable').post();
             },
             $remove: function () {
-                return restangular.one(url, this.id).remove();
+                return restangular.one(path, this.id).remove();
             }
         };
 
-        restangular.extendModel(url, function (obj) {
+        modelMethods = angular.extend(modelMethods, extendMethods);
+
+        restangular.extendModel(path, function (obj) {
             if (angular.isObject(obj)) {
                 return angular.extend(obj, modelMethods);
             } else {
@@ -81,237 +91,158 @@
             }
         });
 
+        restangular.extendCollection(path, function (collection) {
+            angular.forEach(collection, function (row) {
+                angular.extend(row, modelMethods);
+            });
+            return collection;
+        });
+
         return modelMethods;
     };
 
     module.factory('SGBoveda', ['CooperativaRestangular', function (CooperativaRestangular) {
 
-        var bovedaRest = RestObject('bovedas', CooperativaRestangular);
+        var bovedaResource = RestObject('bovedas', CooperativaRestangular);
 
         /**
          * Historiales*
          * */
-        var historialesUrl = bovedaRest.$getShortUrl('historiales');
-        var historialBovedaRest = RestObject(historialesUrl, CooperativaRestangular);
-        historialBovedaRest.$cerrar = function () {
-            return CooperativaRestangular.one(historialesUrl, historialBovedaRest.id).all('cerrar').post();
-        };
-        historialBovedaRest.$congelar = function () {
-            return CooperativaRestangular.one(historialesUrl, historialBovedaRest.id).all('congelar').post();
-        };
-        historialBovedaRest.$descongelar = function () {
-            return CooperativaRestangular.one(historialesUrl, historialBovedaRest.id).all('descongelar').post();
-        };
-        historialBovedaRest.$getDetalle = function () {
-            return CooperativaRestangular.one(historialesUrl, historialBovedaRest.id).all('detalle').getList();
-        };
-        bovedaRest.SGHistorialBoveda = function(){
-            return historialBovedaRest;
+        bovedaResource.SGHistorialBoveda = function () {
+            var extendMethod = {
+                $cerrar: function () {
+                    return CooperativaRestangular.one(this.$getBasePath(), this.id).all('cerrar').post();
+                },
+                $congelar: function () {
+                    return CooperativaRestangular.one(this.$getBasePath(), this.id).all('congelar').post();
+                },
+                $descongelar: function () {
+                    return CooperativaRestangular.one(this.$getBasePath(), this.id).all('descongelar').post();
+                },
+                $getDetalle: function () {
+                    return CooperativaRestangular.one(this.$getBasePath(), this.id).all('detalle').getList();
+                }
+            };
+            var historialSubResource = RestObject(bovedaResource.$concatSubResourcePath('historiales'), CooperativaRestangular, extendMethod);
+
+            /**
+             * Transacciones boveda caja*
+             * */
+            historialSubResource.SGTransaccionBovedaCaja = function () {
+                var extendMethods = {
+                    $confirmar: function () {
+                        return CooperativaRestangular.one(this.$getBasePath(), this.id).all('confirmar').post();
+                    },
+                    $cancelar: function () {
+                        return CooperativaRestangular.one(this.$getBasePath(), this.id).all('cancelar').post();
+                    },
+                    $getDetalle: function () {
+                        return CooperativaRestangular.one(this.$getBasePath(), this.id).all('detalle').getList();
+                    }
+                };
+                var transaccionBovedaCajaSubResource = RestObject(historialSubResource.$concatSubResourcePath('transaccionesBovedaCaja'), CooperativaRestangular, extendMethods);
+                return transaccionBovedaCajaSubResource;
+            };
+
+            return historialSubResource;
         };
 
-        /**
-         * Transacciones boveda caja*
-         * */
-        var transaccionesBovedaCajaUrl = historialBovedaRest.$getShortUrl('transaccionesBovedaCaja');
-        var transaccionesBovedaCajaRest = RestObject(transaccionesBovedaCajaUrl, CooperativaRestangular);
-        transaccionesBovedaCajaRest.$confirmar = function () {
-            return CooperativaRestangular.one(transaccionesBovedaCajaUrl, transaccionesBovedaCajaRest.id).all('confirmar').post();
-        };
-        transaccionesBovedaCajaRest.$cancelar = function () {
-            return CooperativaRestangular.one(transaccionesBovedaCajaUrl, transaccionesBovedaCajaRest.id).all('cancelar').post();
-        };
-        transaccionesBovedaCajaRest.$getDetalle = function () {
-            return CooperativaRestangular.one(transaccionesBovedaCajaUrl, transaccionesBovedaCajaRest.id).all('detalle').getList();
-        };
-        historialBovedaRest.SGTransaccionBovedaCaja = function(){
-            return transaccionesBovedaCajaRest;
-        };
-
-        return bovedaRest;
-
+        return bovedaResource;
     }]);
 
     module.factory('SGCaja', ['CooperativaRestangular', function (CooperativaRestangular) {
 
-        var url = 'cajas';
-        var urlCount = 'cajas/count';
+        var cajaResource = RestObject('cajas', CooperativaRestangular);
 
-        var modelMethos = {
-            $new: function (id) {
-                return angular.extend({id: id}, modelMethos);
-            },
-            $build: function () {
-                return angular.extend({id: undefined}, modelMethos, {
-                    $save: function () {
-                        return CooperativaRestangular.all(url).post(this);
+        /**
+         * BovedaCaja*
+         * */
+        cajaResource.SGBovedaCaja = function () {
+            var bovedaCajaSubResource = RestObject(cajaResource.$concatSubResourcePath('bovedasCaja'), CooperativaRestangular);
+            bovedaCajaSubResource = angular.extend(bovedaCajaSubResource, {});
+
+            /**
+             * HistorialBovedaCaja*
+             * */
+            bovedaCajaSubResource.SGHistorialBovedaCaja = function () {
+                var historialBovedaCajaSubResource = RestObject(bovedaCajaSubResource.$concatSubResourcePath('historiales'), CooperativaRestangular);
+                historialBovedaCajaSubResource = angular.extend(historialBovedaCajaSubResource, {
+                    $congelar: function () {
+                        return CooperativaRestangular.one(historialBovedaCajaSubResource.$getBasePath(), this.id).all('congelar').post();
+                    },
+                    $descongelar: function () {
+                        return CooperativaRestangular.one(historialBovedaCajaSubResource.$getBasePath(), this.id).all('descongelar').post();
+                    },
+                    $cerrar: function (detalle) {
+                        return CooperativaRestangular.one(historialBovedaCajaSubResource.$getBasePath(), this.id).all('cerrar').post(detalle);
+                    },
+                    $getDetalle: function () {
+                        return CooperativaRestangular.one(historialBovedaCajaSubResource.$getBasePath(), this.id).all('detalle').getList();
                     }
                 });
-            },
-            $save: function () {
-                return CooperativaRestangular.one(url, this.id).customPUT(CooperativaRestangular.copy(this), '', {}, {});
-            },
 
-            $find: function (id) {
-                return CooperativaRestangular.one(url, id).get();
-            },
-            $search: function (queryParams) {
-                return CooperativaRestangular.all(url).getList(queryParams);
-            },
+                /**
+                 * TransaccionBovedaCaja*
+                 * */
+                historialBovedaCajaSubResource.SGTransaccionBovedaCaja = function () {
+                    var transaccionBovedaCajaSubResource = RestObject(historialBovedaCajaSubResource.$concatSubResourcePath('transaccionesBovedaCaja'), CooperativaRestangular);
+                    transaccionBovedaCajaSubResource = angular.extend(transaccionBovedaCajaSubResource, {
+                        $confirmar: function () {
+                            return CooperativaRestangular.one(transaccionBovedaCajaSubResource.$getBasePath(), this.id).all('confirmar').post();
+                        },
+                        $cancelar: function () {
+                            return CooperativaRestangular.one(transaccionBovedaCajaSubResource.$getBasePath(), this.id).all('cancelar').post();
+                        },
+                        $getDetalle: function () {
+                            return CooperativaRestangular.one(transaccionBovedaCajaSubResource.$getBasePath(), this.id).all('detalle').getList();
+                        }
+                    });
+                    return transaccionBovedaCajaSubResource;
+                };
 
-            $count: function () {
-                return CooperativaRestangular.one(urlCount).get();
-            },
+                /**
+                 * TransaccionCajaCaja*
+                 * */
+                historialBovedaCajaSubResource.SGTransaccionCajaCaja = function () {
+                    var transaccionCajaCajaSubResource = RestObject(historialBovedaCajaSubResource.$concatSubResourcePath('transaccionesCajaCaja'), CooperativaRestangular);
+                    transaccionCajaCajaSubResource = angular.extend(transaccionCajaCajaSubResource, {
+                        $confirmar: function () {
+                            return CooperativaRestangular.one(transaccionCajaCajaSubResource.$getBasePath(), this.id).all('confirmar').post();
+                        },
+                        $cancelar: function () {
+                            return CooperativaRestangular.one(transaccionCajaCajaSubResource.$getBasePath(), this.id).all('cancelar').post();
+                        },
+                        $getDetalle: function () {
+                            return CooperativaRestangular.one(transaccionCajaCajaSubResource.$getBasePath(), this.id).all('detalle').getList();
+                        }
+                    });
+                    return transaccionCajaCajaSubResource;
+                };
 
-            $disable: function () {
-                return CooperativaRestangular.all(url + '/' + this.id + '/disable').post();
-            },
-            $remove: function (id) {
-                return CooperativaRestangular.one(url, id).remove();
-            },
+                return historialBovedaCajaSubResource;
+            };
 
-            $abrir: function () {
-                return CooperativaRestangular.all(url + '/' + this.id + '/abrir').post();
-            },
-            $cerrar: function (detalle) {
-                return CooperativaRestangular.all(url + '/' + this.id + '/cerrar').post(detalle);
-            },
-            $congelar: function () {
-                return CooperativaRestangular.all(url + '/' + this.id + '/congelar').post();
-            },
-            $descongelar: function () {
-                return CooperativaRestangular.all(url + '/' + this.id + '/descongelar').post();
-            },
-            $getDetalle: function (queryParams) {
-                return CooperativaRestangular.all(url + '/' + this.id + '/detalle').getList(queryParams);
-            },
-
-
-            $addBovedaCaja: function (obj) {
-                return CooperativaRestangular.one(url, this.id).all('bovedaCajas').post(obj);
-            },
-            $getBovedaCajas: function () {
-                return CooperativaRestangular.one(url, this.id).all('bovedaCajas').getList();
-            },
-            $removeBovedaCaja: function (idBovedaCaja) {
-                return CooperativaRestangular.one(url, this.id).one('bovedaCajas', idBovedaCaja).remove();
-            },
-
-            $addTrabajadorCaja: function (obj) {
-                return CooperativaRestangular.one(url, this.id).all('trabajadorCajas').post(obj);
-            },
-            $getTrabajadorCajas: function () {
-                return CooperativaRestangular.one(url, this.id).all('trabajadorCajas').getList();
-            }
-
+            return bovedaCajaSubResource;
         };
 
-        CooperativaRestangular.extendModel(url, function (obj) {
-            if (angular.isObject(obj)) {
-                return angular.extend(obj, modelMethos);
-            } else {
-                return angular.extend({id: obj}, modelMethos)
-            }
-        });
+        /**
+         * TrabajadorCaja*
+         * */
+        cajaResource.SGTrabajadorCaja = function () {
+            var trabajadorCajaSubResource = RestObject(cajaResource.$concatSubResourcePath('trabajadoresCaja'), CooperativaRestangular);
+            trabajadorCajaSubResource = angular.extend(trabajadorCajaSubResource, {});
+            return trabajadorCajaSubResource;
+        };
 
-        return modelMethos;
+        return cajaResource
 
     }]);
 
-    module.factory('SGBovedaCaja', ['CooperativaRestangular', function (CooperativaRestangular) {
+    module.factory('SGTransaccion', ['CooperativaRestangular', function (CooperativaRestangular) {
 
-        var url = 'bovedaCajas';
+        var transaccionResource = RestObject('transacciones', CooperativaRestangular);
 
-        var modelMethos = {
-            $new: function (id) {
-                return angular.extend({id: id}, modelMethos);
-            },
-            $build: function () {
-                return angular.extend({id: undefined}, modelMethos, {
-                    $save: function () {
-                        return CooperativaRestangular.all(url).post(this);
-                    }
-                });
-            },
-            $save: function () {
-                return CooperativaRestangular.one(url, this.id).customPUT(CooperativaRestangular.copy(this), '', {}, {});
-            },
-
-            $find: function (id) {
-                return CooperativaRestangular.one(url, id).get();
-            },
-            $search: function (queryParams) {
-                return CooperativaRestangular.all(url).getList(queryParams);
-            },
-
-            $disable: function () {
-                return CooperativaRestangular.all(url + '/' + this.id + '/disable').post();
-            },
-            $remove: function (id) {
-                return CooperativaRestangular.one(url, id).remove();
-            }
-
-        };
-
-        CooperativaRestangular.extendModel(url, function (obj) {
-            if (angular.isObject(obj)) {
-                return angular.extend(obj, modelMethos);
-            } else {
-                return angular.extend({id: obj}, modelMethos)
-            }
-        });
-
-        return modelMethos;
-
-    }]);
-
-    module.factory('SGTrabajadorCaja', ['CooperativaRestangular', function (CooperativaRestangular) {
-
-        var url = 'trabajadorCajas';
-
-        var modelMethos = {
-            $new: function (id) {
-                return angular.extend({id: id}, modelMethos);
-            },
-            $build: function () {
-                return angular.extend({id: undefined}, modelMethos, {
-                    $save: function () {
-                        return CooperativaRestangular.all(url).post(this);
-                    }
-                });
-            },
-            $save: function () {
-                return CooperativaRestangular.one(url, this.id).customPUT(CooperativaRestangular.copy(this), '', {}, {});
-            },
-
-            $find: function (id) {
-                return CooperativaRestangular.one(url, id).get();
-            },
-            $search: function (queryParams) {
-                return CooperativaRestangular.all(url).getList(queryParams);
-            },
-
-            $disable: function () {
-                return CooperativaRestangular.all(url + '/' + this.id + '/disable').post();
-            },
-            $remove: function (id) {
-                return CooperativaRestangular.one(url, id).remove();
-            },
-
-            $findByTipoNumeroDocumento: function (tipodocumento, numeroDocumento) {
-                return CooperativaRestangular.one(url + '/tipoDocumento/' + tipodocumento + '/numeroDocumento/' + numeroDocumento).get();
-            }
-        };
-
-        CooperativaRestangular.extendModel(url, function (obj) {
-            if (angular.isObject(obj)) {
-                return angular.extend(obj, modelMethos);
-            } else {
-                return angular.extend({id: obj}, modelMethos)
-            }
-        });
-
-        return modelMethos;
-
+        return transaccionResource;
     }]);
 
 })();
