@@ -44,7 +44,7 @@
             /**
              * Concatena la url de subresource con la url base y la retorna*/
             $concatSubResourcePath: function (subResourcePath) {
-                return restangular + '/' + this.id + '/' + subResourcePath;
+                return this.$getBasePath() + '/' + this.id + '/' + subResourcePath;
             },
 
 
@@ -123,7 +123,7 @@
                     return CooperativaRestangular.one(this.$getBasePath(), this.id).all('detalle').getList();
                 }
             };
-            var historialSubResource = RestObject(bovedaResource.$concatSubResourcePath('historiales'), CooperativaRestangular, extendMethod);
+            var historialSubResource = RestObject(this.$concatSubResourcePath('historiales'), CooperativaRestangular, extendMethod);
 
             /**
              * Transacciones boveda caja*
@@ -140,7 +140,7 @@
                         return CooperativaRestangular.one(this.$getBasePath(), this.id).all('detalle').getList();
                     }
                 };
-                var transaccionBovedaCajaSubResource = RestObject(historialSubResource.$concatSubResourcePath('transaccionesBovedaCaja'), CooperativaRestangular, extendMethods);
+                var transaccionBovedaCajaSubResource = RestObject(this.$concatSubResourcePath('transaccionesBovedaCaja'), CooperativaRestangular, extendMethods);
                 return transaccionBovedaCajaSubResource;
             };
 
@@ -165,7 +165,7 @@
              * HistorialBovedaCaja*
              * */
             bovedaCajaSubResource.SGHistorialBovedaCaja = function () {
-                var historialBovedaCajaSubResource = RestObject(bovedaCajaSubResource.$concatSubResourcePath('historiales'), CooperativaRestangular);
+                var historialBovedaCajaSubResource = RestObject(this.$concatSubResourcePath('historiales'), CooperativaRestangular);
                 historialBovedaCajaSubResource = angular.extend(historialBovedaCajaSubResource, {
                     $congelar: function () {
                         return CooperativaRestangular.one(historialBovedaCajaSubResource.$getBasePath(), this.id).all('congelar').post();
@@ -185,7 +185,7 @@
                  * TransaccionBovedaCaja*
                  * */
                 historialBovedaCajaSubResource.SGTransaccionBovedaCaja = function () {
-                    var transaccionBovedaCajaSubResource = RestObject(historialBovedaCajaSubResource.$concatSubResourcePath('transaccionesBovedaCaja'), CooperativaRestangular);
+                    var transaccionBovedaCajaSubResource = RestObject(this.$concatSubResourcePath('transaccionesBovedaCaja'), CooperativaRestangular);
                     transaccionBovedaCajaSubResource = angular.extend(transaccionBovedaCajaSubResource, {
                         $confirmar: function () {
                             return CooperativaRestangular.one(transaccionBovedaCajaSubResource.$getBasePath(), this.id).all('confirmar').post();
@@ -204,7 +204,7 @@
                  * TransaccionCajaCaja*
                  * */
                 historialBovedaCajaSubResource.SGTransaccionCajaCaja = function () {
-                    var transaccionCajaCajaSubResource = RestObject(historialBovedaCajaSubResource.$concatSubResourcePath('transaccionesCajaCaja'), CooperativaRestangular);
+                    var transaccionCajaCajaSubResource = RestObject(this.$concatSubResourcePath('transaccionesCajaCaja'), CooperativaRestangular);
                     transaccionCajaCajaSubResource = angular.extend(transaccionCajaCajaSubResource, {
                         $confirmar: function () {
                             return CooperativaRestangular.one(transaccionCajaCajaSubResource.$getBasePath(), this.id).all('confirmar').post();
@@ -229,7 +229,7 @@
          * TrabajadorCaja*
          * */
         cajaResource.SGTrabajadorCaja = function () {
-            var trabajadorCajaSubResource = RestObject(cajaResource.$concatSubResourcePath('trabajadoresCaja'), CooperativaRestangular);
+            var trabajadorCajaSubResource = RestObject(this.$concatSubResourcePath('trabajadoresCaja'), CooperativaRestangular);
             trabajadorCajaSubResource = angular.extend(trabajadorCajaSubResource, {});
             return trabajadorCajaSubResource;
         };
