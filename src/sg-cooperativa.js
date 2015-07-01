@@ -147,6 +147,69 @@
             return historialSubResource;
         };
 
+        /**
+         * BovedaCaja*
+         * */
+        bovedaResource.SGBovedaCaja = function () {
+            var extendMethod = {
+                $congelar: function () {
+                    return CooperativaRestangular.one(this.$getBasePath(), this.id).all('congelar').post();
+                },
+                $descongelar: function () {
+                    return CooperativaRestangular.one(this.$getBasePath(), this.id).all('descongelar').post();
+                },
+                $cerrar: function (detalle) {
+                    return CooperativaRestangular.one(this.$getBasePath(), this.id).all('cerrar').post(detalle);
+                },
+                $getDetalle: function () {
+                    return CooperativaRestangular.one(this.$getBasePath(), this.id).all('detalle').getList();
+                }
+            };
+
+            var bovedaCajaSubResource = RestObject(this.$concatSubResourcePath('bovedaCajas'), CooperativaRestangular, extendMethod);
+
+            bovedaCajaSubResource.SGHistorialBovedaCaja = function () {
+                var extendMethod = {
+                    $cerrar: function () {
+                        return CooperativaRestangular.one(this.$getBasePath(), this.id).all('cerrar').post();
+                    },
+                    $congelar: function () {
+                        return CooperativaRestangular.one(this.$getBasePath(), this.id).all('congelar').post();
+                    },
+                    $descongelar: function () {
+                        return CooperativaRestangular.one(this.$getBasePath(), this.id).all('descongelar').post();
+                    },
+                    $getDetalle: function () {
+                        return CooperativaRestangular.one(this.$getBasePath(), this.id).all('detalle').getList();
+                    }
+                };
+                var historialBovedaCajaSubResource = RestObject(this.$concatSubResourcePath('historiales'), CooperativaRestangular, extendMethod);
+
+                /**
+                 * Transacciones boveda caja*
+                 * */
+                historialBovedaCajaSubResource.SGTransaccionBovedaCaja = function () {
+                    var extendMethods = {
+                        $confirmar: function () {
+                            return CooperativaRestangular.one(this.$getBasePath(), this.id).all('confirmar').post();
+                        },
+                        $cancelar: function () {
+                            return CooperativaRestangular.one(this.$getBasePath(), this.id).all('cancelar').post();
+                        },
+                        $getDetalle: function () {
+                            return CooperativaRestangular.one(this.$getBasePath(), this.id).all('detalle').getList();
+                        }
+                    };
+                    var transaccionBovedaCajaSubResource = RestObject(this.$concatSubResourcePath('transaccionesBovedaCaja'), CooperativaRestangular, extendMethods);
+                    return transaccionBovedaCajaSubResource;
+                };
+
+                return historialBovedaCajaSubResource;
+            };
+
+            return bovedaCajaSubResource;
+        };
+
         return bovedaResource;
     }]);
 
