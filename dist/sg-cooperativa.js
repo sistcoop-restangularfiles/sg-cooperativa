@@ -211,6 +211,7 @@
         };
 
         return bovedaResource;
+
     }]);
 
     module.factory('SGCaja', ['CooperativaRestangular', function (CooperativaRestangular) {
@@ -221,45 +222,51 @@
          * BovedaCaja*
          * */
         cajaResource.SGBovedaCaja = function () {
-            var bovedaCajaSubResource = RestObject(cajaResource.$concatSubResourcePath('bovedasCaja'), CooperativaRestangular);
-            bovedaCajaSubResource = angular.extend(bovedaCajaSubResource, {});
+            var extendMethod = {};
+
+            var bovedaCajaSubResource = RestObject(this.$concatSubResourcePath('bovedasCaja'), CooperativaRestangular, extendMethod);
 
             /**
              * HistorialBovedaCaja*
              * */
             bovedaCajaSubResource.SGHistorialBovedaCaja = function () {
-                var historialBovedaCajaSubResource = RestObject(this.$concatSubResourcePath('historiales'), CooperativaRestangular);
-                historialBovedaCajaSubResource = angular.extend(historialBovedaCajaSubResource, {
+
+                var extendMethod = {
+                    $cerrar: function () {
+                        return CooperativaRestangular.one(this.$getBasePath(), this.id).all('cerrar').post();
+                    },
                     $congelar: function () {
-                        return CooperativaRestangular.one(historialBovedaCajaSubResource.$getBasePath(), this.id).all('congelar').post();
+                        return CooperativaRestangular.one(this.$getBasePath(), this.id).all('congelar').post();
                     },
                     $descongelar: function () {
-                        return CooperativaRestangular.one(historialBovedaCajaSubResource.$getBasePath(), this.id).all('descongelar').post();
-                    },
-                    $cerrar: function (detalle) {
-                        return CooperativaRestangular.one(historialBovedaCajaSubResource.$getBasePath(), this.id).all('cerrar').post(detalle);
+                        return CooperativaRestangular.one(this.$getBasePath(), this.id).all('descongelar').post();
                     },
                     $getDetalle: function () {
-                        return CooperativaRestangular.one(historialBovedaCajaSubResource.$getBasePath(), this.id).all('detalle').getList();
+                        return CooperativaRestangular.one(this.$getBasePath(), this.id).all('detalle').getList();
                     }
-                });
+                };
+
+                var historialBovedaCajaSubResource = RestObject(this.$concatSubResourcePath('historiales'), CooperativaRestangular, extendMethod);
 
                 /**
                  * TransaccionBovedaCaja*
                  * */
                 historialBovedaCajaSubResource.SGTransaccionBovedaCaja = function () {
-                    var transaccionBovedaCajaSubResource = RestObject(this.$concatSubResourcePath('transaccionesBovedaCaja'), CooperativaRestangular);
-                    transaccionBovedaCajaSubResource = angular.extend(transaccionBovedaCajaSubResource, {
+
+                    var extendMethod = {
                         $confirmar: function () {
-                            return CooperativaRestangular.one(transaccionBovedaCajaSubResource.$getBasePath(), this.id).all('confirmar').post();
+                            return CooperativaRestangular.one(this.$getBasePath(), this.id).all('confirmar').post();
                         },
                         $cancelar: function () {
-                            return CooperativaRestangular.one(transaccionBovedaCajaSubResource.$getBasePath(), this.id).all('cancelar').post();
+                            return CooperativaRestangular.one(this.$getBasePath(), this.id).all('cancelar').post();
                         },
                         $getDetalle: function () {
-                            return CooperativaRestangular.one(transaccionBovedaCajaSubResource.$getBasePath(), this.id).all('detalle').getList();
+                            return CooperativaRestangular.one(this.$getBasePath(), this.id).all('detalle').getList();
                         }
-                    });
+                    };
+
+                    var transaccionBovedaCajaSubResource = RestObject(this.$concatSubResourcePath('transaccionesBovedaCaja'), CooperativaRestangular, extendMethod);
+
                     return transaccionBovedaCajaSubResource;
                 };
 
@@ -267,18 +274,20 @@
                  * TransaccionCajaCaja*
                  * */
                 historialBovedaCajaSubResource.SGTransaccionCajaCaja = function () {
-                    var transaccionCajaCajaSubResource = RestObject(this.$concatSubResourcePath('transaccionesCajaCaja'), CooperativaRestangular);
-                    transaccionCajaCajaSubResource = angular.extend(transaccionCajaCajaSubResource, {
+                    var extendMethod = {
                         $confirmar: function () {
-                            return CooperativaRestangular.one(transaccionCajaCajaSubResource.$getBasePath(), this.id).all('confirmar').post();
+                            return CooperativaRestangular.one(this.$getBasePath(), this.id).all('confirmar').post();
                         },
                         $cancelar: function () {
-                            return CooperativaRestangular.one(transaccionCajaCajaSubResource.$getBasePath(), this.id).all('cancelar').post();
+                            return CooperativaRestangular.one(this.$getBasePath(), this.id).all('cancelar').post();
                         },
                         $getDetalle: function () {
-                            return CooperativaRestangular.one(transaccionCajaCajaSubResource.$getBasePath(), this.id).all('detalle').getList();
+                            return CooperativaRestangular.one(this.$getBasePath(), this.id).all('detalle').getList();
                         }
-                    });
+                    };
+
+                    var transaccionCajaCajaSubResource = RestObject(this.$concatSubResourcePath('transaccionesCajaCaja'), CooperativaRestangular, extendMethod);
+
                     return transaccionCajaCajaSubResource;
                 };
 
@@ -292,8 +301,11 @@
          * TrabajadorCaja*
          * */
         cajaResource.SGTrabajadorCaja = function () {
-            var trabajadorCajaSubResource = RestObject(this.$concatSubResourcePath('trabajadoresCaja'), CooperativaRestangular);
-            trabajadorCajaSubResource = angular.extend(trabajadorCajaSubResource, {});
+
+            var extendMethod = {};
+
+            var trabajadorCajaSubResource = RestObject(this.$concatSubResourcePath('trabajadoresCaja'), CooperativaRestangular, extendMethod);
+
             return trabajadorCajaSubResource;
         };
 
