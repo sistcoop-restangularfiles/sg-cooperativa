@@ -69,6 +69,9 @@
             $save: function () {
                 return restangular.one(path, this.id).customPUT(restangular.copy(this), '', {}, {});
             },
+            $saveSent: function (obj) {
+                return restangular.all(path).post(obj);
+            },
 
             $enable: function () {
                 return restangular.one(path, this.id).all('enable').post();
