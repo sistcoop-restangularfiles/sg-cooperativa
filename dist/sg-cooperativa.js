@@ -65,8 +65,11 @@
                 });
             },
 
+            $findAll: function (queryParams) {
+                return restangular.all(path).getList(queryParams);
+            },
             $search: function (queryParams) {
-                return restangular.all(path).customGET('', queryParams);
+                return restangular.all(path).customGET('search', queryParams);
             },
 
             $find: function (id) {
