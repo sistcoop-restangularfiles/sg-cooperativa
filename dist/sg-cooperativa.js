@@ -65,11 +65,11 @@
                 });
             },
 
-            $findAll: function (queryParams) {
-                return restangular.all(path).getList(queryParams);
-            },
             $search: function (queryParams) {
                 return restangular.all(path).customGET('search', queryParams);
+            },
+            $getAll: function (queryParams) {
+                return restangular.all(path).getList(queryParams);
             },
 
             $find: function (id) {
@@ -95,23 +95,43 @@
 
         modelMethods = angular.extend(modelMethods, extendMethods);
 
-        restangular.extendModel(path, function (obj) {
-            if (angular.isObject(obj)) {
-                if (angular.isDefined(obj.items) && angular.isArray(obj.items)) {
-                    angular.forEach(obj.items, function (row) {
-                        angular.extend(row, modelMethods);
-                    });
+        function extendObject(obj, modelMethods){
+            angular.extend(obj, modelMethods);
+        }
+
+        function extendArray(obj, modelMethods){
+            angular.forEach(obj, function (row) {
+                if (angular.isObject(row)) {
+                    if (!angular.isArray(row)) {
+                        extendObject(row, modelMethods);
+                    }
                 }
-                return angular.extend(obj, modelMethods);
-            } else {
-                return angular.extend({id: obj}, modelMethods)
+            });
+        }
+
+        function automaticExtend(obj, modelMethods){
+            if (angular.isDefined(obj)) {
+                if (angular.isObject(obj)) {
+                    if (angular.isArray(obj)) {
+                        extendArray(obj, modelMethods);
+                    } else {
+                        if (angular.isDefined(obj.items) && angular.isArray(obj.items)) {
+                            extendArray(obj.items, modelMethods);
+                        } else {
+                            extendObject(obj, modelMethods)
+                        }
+                    }
+                }
             }
+        }
+
+        restangular.extendModel(path, function (obj) {
+            automaticExtend(obj, modelMethods);
+            return obj;
         });
 
         restangular.extendCollection(path, function (collection) {
-            angular.forEach(collection, function (row) {
-                angular.extend(row, modelMethods);
-            });
+            automaticExtend(collection, modelMethods);
             return collection;
         });
 
